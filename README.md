@@ -1,2 +1,2 @@
-# Econometrics_Frequentist
-Econometrics_Frequentist
+# Econometrics
+Econometrics
