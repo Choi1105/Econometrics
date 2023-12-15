@@ -34,14 +34,20 @@ Yhat = X*bhat;
 ehat = Y - Yhat;
 sig2hat = ehat'*ehat/(T-k);
 sig2_old = sig2hat;
+%% Ljung Box Q-test %%
+%residuals = ehat;
+%h = lbqtest(residuals);
+%[h, pValue, stat, cValue] = lbqtest(residuals);
 
 
-% Step 2-2: Iterate until convergence
+
+%% Step 2-2: Iterate until convergence %%
 maxiter = 1000;
 iter = 0;
 rho_iter = zeros(1,maxiter);
 sig_iter = zeros(1,maxiter);
 beta_iter = zeros(1,maxiter);
+pval_iter = zeros(1,maxiter);
 %%
 while iter < maxiter
     T = 10000 - iter;
@@ -54,11 +60,11 @@ while iter < maxiter
     L(iter) = sum(((Y-rhohat*Yhat-bhat*X)/(sqrt(1-rhohat^2))).^2);
 
     % Step 2-2b: Transform data
-    Y = Y(2:T) - rhohat*Y(1:T-1);
-    X = X(2:T) - rhohat*X(1:T-1);
+    Ym = Y(2:T) - rhohat*Y(1:T-1);
+    Xm = X(2:T) - rhohat*X(1:T-1);
 
     % Step 2-2c: Estimate coefficients
-    bhat = inv(X'*X)*X'*Y;
+    bhat = inv(Xm'*Xm)*Xm'*Ym;
 
     beta_iter(iter) = bhat;
 
@@ -68,6 +74,10 @@ while iter < maxiter
 
     sig_iter(iter) = sig2hat;
 
+    se = sqrt(diag(inv(Xm'*Xm)*sig2hat));
+    tstat = bhat./se;
+    pval = 2*(1-tcdf(abs(tstat),T-k));
+    pval_iter(iter) = pval;
 end
 %%
 % Step 3: Inference
